@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { errorMessage, isApiError } from '../api/client';
 import { api } from '../api/endpoints';
 import { canEdit as roleCanEdit, canManage, type Card, type Column, type Members } from '../api/types';
@@ -8,13 +8,16 @@ import { ActivityPanel } from '../board/ActivityPanel';
 import { BoardColumns, type MoveIntent } from '../board/BoardColumns';
 import { cardsByColumn, positionBetween } from '../board/boardState';
 import { CardModal } from '../board/CardModal';
+import { ChatPanel } from '../board/ChatPanel';
 import { MembersPanel } from '../board/MembersPanel';
 import { useBoard } from '../board/useBoard';
+import { useChat } from '../board/useChat';
+import { Whiteboard } from '../board/Whiteboard';
 import { useToast } from '../components/Toasts';
 import { Avatar, InlineEdit, Modal, Spinner } from '../components/ui';
 import { getHub, type HubStatus, hubStatus, onHubStatus } from '../realtime/hub';
 
-type Panel = 'members' | 'activity' | null;
+type Panel = 'chat' | 'members' | 'activity' | null;
 
 export function BoardPage() {
   const { boardId = '' } = useParams();
@@ -26,6 +29,10 @@ export function BoardPage() {
   const [panel, setPanel] = useState<Panel>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const live = useHubStatus();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view') === 'whiteboard' ? 'whiteboard' : 'cards';
+  const chat = useChat(boardId, panel === 'chat');
+  const togglePanel = (next: Exclude<Panel, null>) => setPanel((p) => (p === next ? null : next));
 
   const editable = roleCanEdit(state.myRole);
   const isOwner = canManage(state.myRole);
@@ -237,10 +244,18 @@ export function BoardPage() {
             ))}
             {state.presence.length > 5 && <span className="avatar avatar-more">+{state.presence.length - 5}</span>}
           </div>
-          <button className={`button ${panel === 'members' ? 'active' : ''}`} onClick={() => setPanel(panel === 'members' ? null : 'members')}>
+          <button className={`button ${panel === 'chat' ? 'active' : ''}`} onClick={() => togglePanel('chat')}>
+            Chat
+            {chat.unread > 0 && (
+              <span className="badge" aria-label={`${chat.unread} unread`}>
+                {chat.unread > 99 ? '99+' : chat.unread}
+              </span>
+            )}
+          </button>
+          <button className={`button ${panel === 'members' ? 'active' : ''}`} onClick={() => togglePanel('members')}>
             Members · {state.members.length}
           </button>
-          <button className={`button ${panel === 'activity' ? 'active' : ''}`} onClick={() => setPanel(panel === 'activity' ? null : 'activity')}>
+          <button className={`button ${panel === 'activity' ? 'active' : ''}`} onClick={() => togglePanel('activity')}>
             Activity
           </button>
           {isOwner && (
@@ -251,9 +266,30 @@ export function BoardPage() {
         </div>
       </div>
 
-      {!editable && <div className="notice board-notice">You have view-only access. Ask an owner for Editor access to make changes.</div>}
+      <div className="view-tabs" role="tablist" aria-label="Board view">
+        <button
+          role="tab"
+          aria-selected={view === 'cards'}
+          className={`view-tab ${view === 'cards' ? 'active' : ''}`}
+          onClick={() => setSearchParams({}, { replace: true })}
+        >
+          Cards
+        </button>
+        <button
+          role="tab"
+          aria-selected={view === 'whiteboard'}
+          className={`view-tab ${view === 'whiteboard' ? 'active' : ''}`}
+          onClick={() => setSearchParams({ view: 'whiteboard' }, { replace: true })}
+        >
+          Whiteboard
+        </button>
+        {!editable && <span className="muted small view-note">View-only access. Ask an owner for Editor access to make changes.</span>}
+      </div>
 
       <div className="board-body">
+        {view === 'whiteboard' ? (
+          <Whiteboard key={boardId} boardId={boardId} canEdit={editable} myUserId={user.uid} />
+        ) : (
         <BoardColumns
           columns={state.columns}
           cardsByColumn={grouped}
@@ -266,6 +302,11 @@ export function BoardPage() {
           onRenameColumn={renameColumn}
           onRemoveColumn={(c) => void removeColumn(c)}
         />
+        )}
+
+        {panel === 'chat' && (
+          <ChatPanel chat={chat} myUserId={user.uid} isOwner={isOwner} onClose={() => setPanel(null)} />
+        )}
 
         {panel === 'members' && (
           <MembersPanel

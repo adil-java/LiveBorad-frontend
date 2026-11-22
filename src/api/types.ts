@@ -92,7 +92,8 @@ export type ActivityType =
   | 'MemberAdded'
   | 'MemberInvited'
   | 'MemberRoleChanged'
-  | 'MemberRemoved';
+  | 'MemberRemoved'
+  | 'DrawingCleared';
 
 export interface Activity {
   id: string;
@@ -101,5 +102,28 @@ export interface Activity {
   type: ActivityType;
   summary: string;
   cardId: string | null;
+  createdAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  boardId: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
+
+export type StrokeTool = 'Pen' | 'Highlighter';
+
+/** Points are flattened [x0, y0, x1, y1, ...] in a fixed logical canvas (see CANVAS in board/whiteboard). */
+export interface Stroke {
+  id: string;
+  boardId: string;
+  authorId: string;
+  tool: StrokeTool;
+  color: string;
+  width: number;
+  points: number[];
   createdAt: string;
 }

@@ -1,5 +1,5 @@
 import { apiRequest } from './client';
-import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, Column, Me, Members } from './types';
+import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, ChatMessage, Column, Me, Members, Stroke, StrokeTool } from './types';
 
 const board = (boardId: string) => `/api/boards/${boardId}`;
 
@@ -43,4 +43,19 @@ export const api = {
     if (before) query.set('before', before);
     return apiRequest<Activity[]>('GET', `${board(boardId)}/activity?${query}`);
   },
+
+  listChat: (boardId: string, before?: string) => {
+    const query = new URLSearchParams({ limit: '50' });
+    if (before) query.set('before', before);
+    return apiRequest<ChatMessage[]>('GET', `${board(boardId)}/chat?${query}`);
+  },
+  sendChat: (boardId: string, text: string) => apiRequest<ChatMessage>('POST', `${board(boardId)}/chat`, { text }),
+  deleteChat: (boardId: string, messageId: string) => apiRequest<void>('DELETE', `${board(boardId)}/chat/${messageId}`),
+
+  listStrokes: (boardId: string) => apiRequest<Stroke[]>('GET', `${board(boardId)}/drawing`),
+  addStroke: (boardId: string, stroke: { id: string; tool: StrokeTool; color: string; width: number; points: number[] }) =>
+    apiRequest<Stroke>('POST', `${board(boardId)}/drawing/strokes`, stroke),
+  eraseStrokes: (boardId: string, strokeIds: string[]) =>
+    apiRequest<void>('POST', `${board(boardId)}/drawing/erase`, { strokeIds }),
+  clearDrawing: (boardId: string) => apiRequest<void>('DELETE', `${board(boardId)}/drawing`),
 };
