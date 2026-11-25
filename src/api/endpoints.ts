@@ -1,5 +1,5 @@
 import { apiRequest } from './client';
-import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, ChatMessage, Column, Me, Members, Stroke, StrokeTool } from './types';
+import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, ChatMessage, Column, IceServer, Me, Members, Stroke, StrokeTool } from './types';
 
 const board = (boardId: string) => `/api/boards/${boardId}`;
 
@@ -58,4 +58,6 @@ export const api = {
   eraseStrokes: (boardId: string, strokeIds: string[]) =>
     apiRequest<void>('POST', `${board(boardId)}/drawing/erase`, { strokeIds }),
   clearDrawing: (boardId: string) => apiRequest<void>('DELETE', `${board(boardId)}/drawing`),
+
+  iceServers: () => apiRequest<IceServer[]>('GET', '/api/calls/ice-servers'),
 };

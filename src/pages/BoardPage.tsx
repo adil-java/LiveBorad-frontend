@@ -11,6 +11,8 @@ import { CardModal } from '../board/CardModal';
 import { ChatPanel } from '../board/ChatPanel';
 import { MembersPanel } from '../board/MembersPanel';
 import { useBoard } from '../board/useBoard';
+import { CallDock } from '../board/CallDock';
+import { useCall } from '../board/useCall';
 import { useChat } from '../board/useChat';
 import { Whiteboard } from '../board/Whiteboard';
 import { useToast } from '../components/Toasts';
@@ -21,7 +23,7 @@ type Panel = 'chat' | 'members' | 'activity' | null;
 
 export function BoardPage() {
   const { boardId = '' } = useParams();
-  const { user } = useSignedIn();
+  const { user, me } = useSignedIn();
   const navigate = useNavigate();
   const toast = useToast();
   const { state, dispatch, loadError, reload, leavingRef } = useBoard(boardId);
@@ -32,6 +34,7 @@ export function BoardPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get('view') === 'whiteboard' ? 'whiteboard' : 'cards';
   const chat = useChat(boardId, panel === 'chat');
+  const call = useCall(boardId);
   const togglePanel = (next: Exclude<Panel, null>) => setPanel((p) => (p === next ? null : next));
 
   const editable = roleCanEdit(state.myRole);
@@ -244,6 +247,7 @@ export function BoardPage() {
             ))}
             {state.presence.length > 5 && <span className="avatar avatar-more">+{state.presence.length - 5}</span>}
           </div>
+          <CallButton call={call} />
           <button className={`button ${panel === 'chat' ? 'active' : ''}`} onClick={() => togglePanel('chat')}>
             Chat
             {chat.unread > 0 && (
@@ -349,6 +353,8 @@ export function BoardPage() {
         />
       )}
 
+      {call.joined && <CallDock call={call} myUserId={user.uid} myName={me.displayName} />}
+
       {confirmDelete && (
         <Modal title="Delete board?" onClose={() => setConfirmDelete(false)}>
           <p>
@@ -381,5 +387,27 @@ function LiveIndicator({ status }: { status: HubStatus }) {
       <span className="live-dot" />
       {label}
     </span>
+  );
+}
+
+function CallButton({ call }: { call: ReturnType<typeof useCall> }) {
+  const count = call.participants.length;
+  if (call.joined) {
+    return (
+      <button className="button call-button in-call" onClick={call.leave} title="Leave the call">
+        <span className="call-live-dot" aria-hidden="true" />
+        Leave call
+      </button>
+    );
+  }
+  return (
+    <button
+      className={`button call-button ${count > 0 ? 'ringing' : ''}`}
+      disabled={call.joining}
+      onClick={() => void call.join()}
+      title={count > 0 ? `${call.participants.map((p) => p.displayName).join(', ')} in the call` : 'Start a voice/video call'}
+    >
+      {call.joining ? 'Joining…' : count > 0 ? `Join call · ${count}` : 'Start call'}
+    </button>
   );
 }

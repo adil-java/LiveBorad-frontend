@@ -93,7 +93,8 @@ export type ActivityType =
   | 'MemberInvited'
   | 'MemberRoleChanged'
   | 'MemberRemoved'
-  | 'DrawingCleared';
+  | 'DrawingCleared'
+  | 'CallStarted';
 
 export interface Activity {
   id: string;
@@ -126,4 +127,20 @@ export interface Stroke {
   width: number;
   points: number[];
   createdAt: string;
+}
+
+/** One browser connection in a board's call; connectionId addresses it for WebRTC signalling. */
+export interface CallParticipant {
+  connectionId: string;
+  userId: string;
+  displayName: string;
+  micOn: boolean;
+  cameraOn: boolean;
+  screenSharing: boolean;
+}
+
+export interface IceServer {
+  urls: string[];
+  username: string | null;
+  credential: string | null;
 }
