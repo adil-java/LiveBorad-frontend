@@ -13,6 +13,8 @@ Built with **React**, **TypeScript** and **Vite**. It talks to the [LiveBoard ba
 - **Live collaboration:** changes from teammates appear instantly, with avatars showing who's on the board and a Live / Reconnecting indicator.
 - **Chat:** a chat per board, with history, a "typing…" indicator and an unread badge.
 - **Whiteboard:** draw together with pen, highlighter and eraser in several colours and sizes. Others see lines as they are drawn, with the artist's name. Includes undo (Ctrl/⌘+Z), clear and PNG download.
+- **Voice and video calls:** start or join a board's call for up to 6 people. Mute, turn the camera on or off, share your screen (with its sound in Chrome/Edge), and enlarge the call window. A green **Join call** button shows when a call is running, and the person talking is highlighted.
+- **Call rooms:** create a room from the home page and share its link (`/room/abc-defg-hij`) or code. Anyone can join, including **guests without an account**, who just type their name.
 - **Team management:** invite people as Viewer, Editor or Owner, change roles, remove members, or leave a board.
 - **Activity feed:** a history of every change on the board.
 - Works in light and dark mode and on phone-sized screens.
@@ -28,6 +30,7 @@ Built with **React**, **TypeScript** and **Vite**. It talks to the [LiveBoard ba
 | Real time | `@microsoft/signalr` |
 | Drag and drop | `@dnd-kit` |
 | Whiteboard | HTML canvas (no extra library) |
+| Calls | WebRTC (built into browsers); setup messages go through SignalR |
 
 ## Getting started
 
@@ -41,7 +44,7 @@ Built with **React**, **TypeScript** and **Vite**. It talks to the [LiveBoard ba
 
    | Variable | Where to find it |
    |---|---|
-   | `VITE_API_URL` | Backend URL, e.g. `http://localhost:5024` |
+   | `VITE_API_URL` | Leave **empty** for development: the dev server forwards `/api` and `/hubs` to the backend (`API_PROXY_TARGET`, default `http://localhost:5024`). Set it to the deployed API's URL for production builds. |
    | `VITE_FIREBASE_API_KEY` | Firebase console → Project settings → General → Your apps |
    | `VITE_FIREBASE_AUTH_DOMAIN` | Same place, e.g. `your-project.firebaseapp.com` |
    | `VITE_FIREBASE_PROJECT_ID` | Same place; must match the backend's `Firebase:ProjectId` |
@@ -55,7 +58,9 @@ Built with **React**, **TypeScript** and **Vite**. It talks to the [LiveBoard ba
    ```
    Open `http://localhost:5173`. The backend allows this address by default in Development.
 
-To see the live collaboration, open the same board in two browser windows signed in as different users. Add the second user under **Members** first.
+To see the live collaboration, open the same board in two browser windows signed in as different users.
+
+**Testing on a phone or another computer:** run `ngrok http 5173` and open the `https://…ngrok-free.app` address it prints. API and live-update traffic go through the same tunnel, so only the frontend needs exposing. Add the ngrok domain under Firebase → Authentication → Settings → Authorized domains for Google sign-in. Add the second user under **Members** first.
 
 ## Scripts
 
@@ -87,6 +92,17 @@ src/
 - **Receiving:** other people's changes arrive as SignalR events and are merged into the board by ID, so duplicates are harmless.
 - **No echoes:** each request includes the tab's SignalR connection ID, so the server doesn't send your own change back to you.
 - **Reconnecting:** after a dropped connection, the app rejoins the board and reloads it, so nothing missed while offline is lost.
+
+## Calls
+
+Calls are peer-to-peer WebRTC: audio and video go directly between browsers, and the backend only relays the setup messages. Some things to know:
+
+- **HTTPS is required** for camera and microphone access. `localhost` is allowed during development, and hosts such as Vercel, Netlify and Cloudflare Pages provide HTTPS.
+- **The browser asks permission** for the microphone when you join and for the camera when you turn it on. If you block the microphone, you join muted and can still listen.
+- **Some networks block direct connections.** If a tile stays on "Can't connect", the backend needs a TURN server (see the backend README's *Calls* section).
+- **Guests** join rooms with Firebase **anonymous sign-in**. Enable it in the Firebase console under Authentication → Sign-in method → Anonymous.
+- **Screen sound** works in Chrome and Edge: share a tab with "Share tab audio" on (Windows can also share system audio). Phones can't share their screen at all; that's a browser limit.
+- **Up to 6 people per call.** To test, join the same board's call from two browsers or devices signed in as different users.
 
 ## Deployment
 
