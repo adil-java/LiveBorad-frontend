@@ -8,7 +8,8 @@ function required(name: string, value: string | undefined): string {
 }
 
 export const config = {
-  apiUrl: (env.VITE_API_URL || 'http://localhost:5024').replace(/\/+$/, ''),
+  /** Empty means same origin: in development the Vite server forwards /api and /hubs to the backend. */
+  apiUrl: (env.VITE_API_URL ?? '').trim().replace(/\/+$/, ''),
   firebase: {
     apiKey: required('VITE_FIREBASE_API_KEY', env.VITE_FIREBASE_API_KEY),
     authDomain: required('VITE_FIREBASE_AUTH_DOMAIN', env.VITE_FIREBASE_AUTH_DOMAIN),
