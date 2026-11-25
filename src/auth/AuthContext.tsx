@@ -4,6 +4,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInAnonymously,
   signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
@@ -19,6 +20,8 @@ import { stopHub } from '../realtime/hub';
 type AuthState =
   | { status: 'loading' }
   | { status: 'signedOut' }
+  /** Signed in anonymously to join a call room by code. Guests can only use rooms. */
+  | { status: 'guest'; user: User }
   | { status: 'syncFailed'; user: User; error: string }
   | { status: 'signedIn'; user: User; me: Me };
 
@@ -27,6 +30,8 @@ interface AuthApi {
   signInWithGoogle(): Promise<void>;
   signInWithEmail(email: string, password: string): Promise<void>;
   signUpWithEmail(name: string, email: string, password: string): Promise<void>;
+  /** Firebase anonymous sign-in, so people without an account can join a room by its code. */
+  signInAsGuest(): Promise<void>;
   resetPassword(email: string): Promise<void>;
   resendVerification(): Promise<void>;
   /** Re-reads the Firebase user and re-syncs, e.g. after the user clicked the verification link. */
@@ -41,6 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: 'loading' });
   // While signing up, the profile name is set after the account exists; sync once that is done.
   const signingUp = useRef(false);
+  /** The hub connection carries the previous user's token, so it's replaced whenever the user changes. */
+  const lastUid = useRef<string | null>(null);
 
   const sync = useCallback(async (user: User) => {
     try {
@@ -54,6 +61,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(
     () =>
       onAuthStateChanged(auth, (user) => {
+        if ((user?.uid ?? null) !== lastUid.current) {
+          if (lastUid.current !== null) void stopHub();
+          lastUid.current = user?.uid ?? null;
+        }
+        if (user?.isAnonymous) {
+          setState({ status: 'guest', user });
+          return;
+        }
         if (!user) {
           void stopHub();
           setState({ status: 'signedOut' });
@@ -71,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       state,
       async signInWithGoogle() {
         await signInWithPopup(auth, googleProvider);
+      },
+      async signInAsGuest() {
+        if (auth.currentUser) return; // already signed in (as a member or a guest)
+        await signInAnonymously(auth);
       },
       async signInWithEmail(email, password) {
         await signInWithEmailAndPassword(auth, email.trim(), password);

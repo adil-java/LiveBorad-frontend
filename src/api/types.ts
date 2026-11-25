@@ -137,6 +137,18 @@ export interface CallParticipant {
   micOn: boolean;
   cameraOn: boolean;
   screenSharing: boolean;
+  isGuest: boolean;
+}
+
+/** A call room anyone with the code can join, including guests without an account. */
+export interface Room {
+  id: string;
+  code: string;
+  name: string;
+  ownerId: string;
+  ownerName: string;
+  createdAt: string;
+  peopleInCall: number;
 }
 
 export interface IceServer {

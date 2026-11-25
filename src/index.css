@@ -1467,6 +1467,212 @@ a {
   font-weight: 600;
 }
 
+/* ---- Rooms ---- */
+
+.rooms-section {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.rooms-section .page-header {
+  align-items: flex-start;
+}
+.rooms-section h2 {
+  font-size: 1.25rem;
+}
+.join-code {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.join-code input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 340px;
+}
+.join-code.compact {
+  margin-bottom: 0;
+}
+.join-code.compact input {
+  max-width: none;
+}
+.join-code .error-text {
+  width: 100%;
+}
+.room-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.room-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.room-list-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.room-list-name {
+  font-weight: 650;
+  color: var(--text);
+  text-decoration: none;
+}
+.room-list-name:hover {
+  text-decoration: underline;
+}
+.room-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.03em;
+}
+.in-call-now {
+  color: var(--success);
+}
+
+.room-page {
+  min-height: 100vh;
+  background: #0f1115;
+  color: #f1f3f7;
+  display: flex;
+  flex-direction: column;
+}
+.room-page.center {
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.room-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.room-card h1 {
+  font-size: 1.4rem;
+}
+.room-card .room-code {
+  font-weight: 650;
+}
+.room-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  border-bottom: 1px solid #23262e;
+}
+.room-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.room-title h1 {
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.room-title .room-code {
+  font-size: 0.8rem;
+  color: #9aa1b0;
+}
+.room-bar .button:not(.primary):not(.danger) {
+  background: #22262f;
+  border-color: #343a45;
+  color: #f1f3f7;
+}
+.room-stage-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.call-dock.page {
+  position: static;
+  width: auto;
+  max-width: none;
+  flex: 1;
+  min-height: 0;
+  margin: 12px;
+  box-shadow: none;
+  background: transparent;
+}
+.call-dock.page .call-grid {
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+}
+.call-dock.page .call-tile {
+  aspect-ratio: auto;
+  min-height: 160px;
+}
+.call-dock.page .call-grid.count-3,
+.call-dock.page .call-grid.count-4 {
+  grid-template-columns: 1fr 1fr;
+}
+.call-dock.page .call-grid.count-5,
+.call-dock.page .call-grid.count-6 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.invite-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.invite-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.invite-code-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  text-align: center;
+}
+.invite-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  user-select: all;
+}
+.room-invite-inline {
+  margin: 12px 12px 0;
+  align-self: center;
+  width: min(460px, calc(100% - 24px));
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
 /* ---- Call: spotlight, pin, full screen ---- */
 
 .call-grid-item,
@@ -1619,6 +1825,18 @@ a {
   }
   .call-control {
     min-width: 52px;
+  }
+  .call-dock.page .call-grid.count-3,
+  .call-dock.page .call-grid.count-4,
+  .call-dock.page .call-grid.count-5,
+  .call-dock.page .call-grid.count-6 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .call-dock.page .call-tile {
+    min-height: 120px;
+  }
+  .room-bar {
+    padding: 10px 16px;
   }
   .drawer {
     position: absolute;

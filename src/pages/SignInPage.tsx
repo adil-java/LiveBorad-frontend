@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { authErrorMessage } from '../lib/firebase';
+import { JoinByCode } from './RoomsSection';
 
 type Mode = 'signIn' | 'signUp' | 'reset';
 
@@ -125,6 +126,12 @@ export function SignInPage() {
             </button>
           )}
         </div>
+
+        <div className="divider">
+          <span>joining a call?</span>
+        </div>
+        <JoinByCode compact />
+        <p className="muted small">No account needed: open the invite link or enter the room code.</p>
       </div>
     </main>
   );

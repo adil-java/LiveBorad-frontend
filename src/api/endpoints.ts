@@ -1,5 +1,5 @@
 import { apiRequest } from './client';
-import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, ChatMessage, Column, IceServer, Me, Members, Stroke, StrokeTool } from './types';
+import type { Activity, BoardDetail, BoardRole, BoardSummary, Card, ChatMessage, Column, IceServer, Me, Members, Room, Stroke, StrokeTool } from './types';
 
 const board = (boardId: string) => `/api/boards/${boardId}`;
 
@@ -60,4 +60,9 @@ export const api = {
   clearDrawing: (boardId: string) => apiRequest<void>('DELETE', `${board(boardId)}/drawing`),
 
   iceServers: () => apiRequest<IceServer[]>('GET', '/api/calls/ice-servers'),
+
+  createRoom: (name: string | null) => apiRequest<Room>('POST', '/api/rooms', { name }),
+  listRooms: () => apiRequest<Room[]>('GET', '/api/rooms'),
+  getRoom: (code: string) => apiRequest<Room>('GET', `/api/rooms/${encodeURIComponent(code)}`),
+  endRoom: (code: string) => apiRequest<void>('DELETE', `/api/rooms/${encodeURIComponent(code)}`),
 };

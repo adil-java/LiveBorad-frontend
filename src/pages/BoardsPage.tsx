@@ -6,6 +6,7 @@ import type { BoardSummary } from '../api/types';
 import { useSignedIn } from '../auth/AuthContext';
 import { useToast } from '../components/Toasts';
 import { Spinner, timeAgo } from '../components/ui';
+import { RoomsSection } from './RoomsSection';
 
 export function BoardsPage() {
   const { me } = useSignedIn();
@@ -105,6 +106,8 @@ export function BoardsPage() {
           ))}
         </ul>
       )}
+
+      <RoomsSection />
     </main>
   );
 }

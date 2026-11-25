@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router';
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
+import { errorMessage } from './api/client';
+import { api } from './api/endpoints';
 import { AuthProvider, useAuth, useSignedIn } from './auth/AuthContext';
 import { ToastProvider, useToast } from './components/Toasts';
 import { Avatar, Spinner } from './components/ui';
 import { authErrorMessage } from './lib/firebase';
 import { BoardPage } from './pages/BoardPage';
 import { BoardsPage } from './pages/BoardsPage';
+import { RoomPage } from './pages/RoomPage';
 import { SignInPage } from './pages/SignInPage';
 
 export default function App() {
@@ -22,6 +25,16 @@ export default function App() {
 
 function Shell() {
   const { state, retrySync, signOut } = useAuth();
+  const location = useLocation();
+
+  // Call rooms are open to everyone with the link, signed in or not; the page handles its own sign-in.
+  if (location.pathname.startsWith('/room/')) {
+    return (
+      <Routes>
+        <Route path="/room/:code" element={<RoomPage />} />
+      </Routes>
+    );
+  }
 
   if (state.status === 'loading') {
     return (
@@ -32,7 +45,8 @@ function Shell() {
   }
 
   // Signed-out visitors see the sign-in screen at whatever URL they opened, and land there after signing in.
-  if (state.status === 'signedOut') return <SignInPage />;
+  // Guests (anonymous sign-in for rooms) can't use boards, so they get the sign-in screen here too.
+  if (state.status === 'signedOut' || state.status === 'guest') return <SignInPage />;
 
   if (state.status === 'syncFailed') {
     return (
@@ -69,6 +83,23 @@ function Shell() {
 function TopBar() {
   const { signOut } = useAuth();
   const { me } = useSignedIn();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [creatingRoom, setCreatingRoom] = useState(false);
+
+  // One click to a call anyone can join: create a room and open it (its page shows the code and link to share).
+  const newRoom = async () => {
+    setCreatingRoom(true);
+    try {
+      const room = await api.createRoom(null);
+      navigate(`/room/${room.code}`);
+    } catch (e) {
+      toast(errorMessage(e), 'error');
+    } finally {
+      setCreatingRoom(false);
+    }
+  };
+
   return (
     <header className="topbar">
       <Link to="/" className="brand">
@@ -76,6 +107,9 @@ function TopBar() {
         LiveBoard
       </Link>
       <div className="row">
+        <button className="button primary small" disabled={creatingRoom} onClick={() => void newRoom()}>
+          {creatingRoom ? 'Creating…' : '+ New call room'}
+        </button>
         <Avatar id={me.userId} name={me.displayName} />
         <span className="topbar-name">{me.displayName}</span>
         <button className="button ghost small" onClick={() => void signOut()}>

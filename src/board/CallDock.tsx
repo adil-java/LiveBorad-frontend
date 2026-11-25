@@ -235,7 +235,7 @@ function RemoteTile({
   return (
     <Tile
       id={participant.userId}
-      name={participant.displayName}
+      name={participant.isGuest ? `${participant.displayName} (guest)` : participant.displayName}
       stream={stream ?? null}
       showVideo={showVideo}
       micOn={participant.micOn}
